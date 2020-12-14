@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    tools:context=".MainActivity">
+
+    <Button
+        android:id="@+id/show7"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="直接显示7.0以前的" />
+
+    <Button
+        android:id="@+id/show8"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="直接显示8.0以后的" />
+
+
+    <Button
+
+        android:id="@+id/show_reply"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="可回复消息的通知 应该跟启动其他Activity的差不多" />
+
+    <Button
+        android:id="@+id/show_float"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="能在手机顶部悬浮显示" />
+
+    <Button
+        android:id="@+id/show_lock"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="能在锁屏上显示的" />
+
+    <Button
+        android:id="@+id/show_custom"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="自定义内容的通知 以及自定义的点击事件" />
+
+    <Button
+        android:id="@+id/show_jump1"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="自定义内容的通知跳转的=放在栈中的" />
+
+    <Button
+        android:id="@+id/show_jump2"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="自定义内容的通知跳转的2独立一个任务栈的" />
+
+    <Button
+        android:id="@+id/show_app"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="长按应用能显示的" />
+
+    <Button
+        android:id="@+id/show_group"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="创建一组通知" />
+
+
+</LinearLayout>
