@@ -1,5 +1,6 @@
 package com.example.notificationtest;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.core.app.NotificationCompat;
 import androidx.core.app.NotificationManagerCompat;
@@ -10,12 +11,20 @@ import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Handler;
+import android.os.Message;
+import android.util.Log;
 import android.view.View;
+import android.view.Window;
+import android.view.WindowManager;
 import android.widget.Button;
 import android.widget.RemoteViews;
 
@@ -38,6 +47,9 @@ import android.widget.RemoteViews;
  * 链接：https://www.jianshu.com/p/d2ef361cedfe
  * 来源：简书
  * 著作权归作者所有。商业转载请联系作者获得授权，非商业转载请注明出处。
+ *
+ *
+ * 1.为什么 需要点击2次以后才能显示通知  第一次无法显示
  */
 public class MainActivity extends AppCompatActivity {
     private static final String CHANNEL_ID = "chat";
@@ -56,6 +68,7 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         bindViews();
 
+
         manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             String channelId = "subscribe";
@@ -63,9 +76,9 @@ public class MainActivity extends AppCompatActivity {
 
             createNotificationChannel(channelId, channelName);
 
+
             channelId = "chat";
             channelName = "聊天消息";
-
             createNotificationChannel(channelId, channelName);
 
 
@@ -111,7 +124,12 @@ public class MainActivity extends AppCompatActivity {
                 showGroup();
             }
         });
-
+        mShow_lock.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View view) {
+                showLock();
+            }
+        });
     }
 
     /**
@@ -126,7 +144,7 @@ public class MainActivity extends AppCompatActivity {
         // the NotificationChannel class is new and not in the support library
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
 
-            int importance = NotificationManager.IMPORTANCE_DEFAULT;
+            int importance = NotificationManager.IMPORTANCE_HIGH ;
             NotificationChannel channel = new NotificationChannel(channelId, name, importance);
             channel.setDescription("随便描述下");
             // Register the channel with the system; you can't change the importance
@@ -146,6 +164,7 @@ public class MainActivity extends AppCompatActivity {
         Notification notification = new NotificationCompat.Builder(MainActivity.this)
                 .setContentTitle("这是测试通知标题")  //设置标题
                 .setContentText("这是测试通知内容") //设置内容
+
                 .setWhen(System.currentTimeMillis())  //设置时间
                 .setSmallIcon(R.mipmap.ic_launcher)  //设置小图标  只能使用alpha图层的图片进行设置
                 .setLargeIcon(BitmapFactory.decodeResource(getResources(), R.mipmap.ic_launcher))   //设置大图标
@@ -164,15 +183,7 @@ public class MainActivity extends AppCompatActivity {
 
     int i = 1;
 
-    public void show78() {
-        Notification notification = new NotificationCompat.Builder(this, "subscribe")
-                .setSmallIcon(R.drawable.ic_error)
-                .setContentTitle("ssssssssss")
-                .setContentText("1111111111111111111111")
-                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
-                .build();
-        manager.notify(i++, notification);
-    }
+
 
     /**
      * 不知道是不是
@@ -237,6 +248,7 @@ public class MainActivity extends AppCompatActivity {
         notificationManager.notify(1, notification);
     }
 
+//    很迷啊  自己的手机失败了
     public void showJump2() {
         /**
          * 特殊 Activity
@@ -363,6 +375,18 @@ public class MainActivity extends AppCompatActivity {
      * 布局中的宽，必须为0，wrap_content，或match_parent
      * 因为从别的地方拷贝的布局。里面用的居然是fill_parent。果断抛出异常，源码中是这样的
      */
+    int count=0;
+
+    public void show78() {
+        Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_error)
+                .setContentTitle("ssssssssss")
+                .setContentText("1111111111111111111111")
+                .setChannelId("5555")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .build();
+        manager.notify(1, notification);
+    }
     public void showCustom() {
         Intent resultIntent = new Intent(this, ShowActivity.class);
         // Create the TaskStackBuilder and add the intent, which inflates the back stack
@@ -380,10 +404,11 @@ public class MainActivity extends AppCompatActivity {
 //        Intent play = new Intent("play");
 //        PendingIntent play_intent = PendingIntent.getBroadcast(this, 0, play, 0);
 //        remoteView.setOnClickPendingIntent(R.id.notification_pre, play_intent);
-        notificationLayout.setOnClickPendingIntent(R.id.tvxx,resultPendingIntent);
+        notificationLayout.setOnClickPendingIntent(R.id.tvxx, resultPendingIntent);
 //        notificationLayout.setOnClickFillInIntent(R.id.tvxx,resultIntent);
+        count++;
         Notification notification = new NotificationCompat.Builder(this, CHANNEL_ID)
-                .setContentText("sadsadasd")
+                .setContentText("sadsadasd:"+count)
                 .setContentTitle("13213212")
                 .setSmallIcon(R.drawable.ic_mute)
 //                .setStyle(new NotificationCompat.DecoratedCustomViewStyle())
@@ -394,7 +419,74 @@ public class MainActivity extends AppCompatActivity {
 
     }
 
+    /**
+     * 1.锁屏
+     * 2.等待2s
+     * 3.发送通知
+     */
+    public void showLock() {
+        IntentFilter filter = new IntentFilter();
+        filter.addAction(Intent.ACTION_SCREEN_ON);
+        filter.addAction(Intent.ACTION_SCREEN_OFF);
+        filter.addAction(Intent.ACTION_USER_PRESENT);
+        registerReceiver(new ScreenBroadcastReceiver(), filter);
+        Window win = getWindow();
+        win.addFlags(WindowManager.LayoutParams.FLAG_SHOW_WHEN_LOCKED //锁屏状态下显示
+        );
 
+        handler.sendEmptyMessageDelayed(1, 4000);
+
+
+        Intent fullScreenIntent = new Intent(this, ShowActivity.class);
+        PendingIntent fullScreenPendingIntent = PendingIntent.getActivity(this, 0,
+                fullScreenIntent, PendingIntent.FLAG_UPDATE_CURRENT);
+
+        NotificationCompat.Builder builder = new NotificationCompat.Builder(this, CHANNEL_ID)
+                .setSmallIcon(R.drawable.ic_error)
+                .setContentTitle("My notification")
+                .setContentText("Hello World!")
+                .setPriority(NotificationCompat.PRIORITY_DEFAULT)
+                .setFullScreenIntent(fullScreenPendingIntent, true);
+    }
+
+    Handler handler = new Handler() {
+        @Override
+        public void handleMessage(@NonNull Message msg) {
+            super.handleMessage(msg);
+//            show78();
+        }
+    };
+
+    class ScreenBroadcastReceiver extends BroadcastReceiver {
+        private String action = null;
+        private static final String TAG = "ScreenBroadcastReceiver";
+
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            action = intent.getAction();
+            Log.i(TAG, "onReceive: " + action);
+            switch (action) {
+                case Intent.ACTION_SCREEN_ON:
+
+                    break;
+                case Intent.ACTION_SCREEN_OFF:
+                    showCustom();
+
+                    break;
+                case Intent.ACTION_USER_PRESENT:
+
+
+                    break;
+
+
+            }
+
+        }
+    }
+
+   public void  showFloat(){
+
+    }
     private Button mShow7;
     private Button mShow8;
 
@@ -425,4 +517,24 @@ public class MainActivity extends AppCompatActivity {
 
 
     }
+
+    private static final String TAG = "MainActivity";
+    @Override
+    protected void onPause() {
+        super.onPause();
+        Log.i(TAG, "onPause: ");
+    }
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        Log.i(TAG, "onStop: ");
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.i(TAG, "onDestroy: ");
+    }
+
 }
